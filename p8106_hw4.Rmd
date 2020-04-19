@@ -1,0 +1,26 @@
+---
+title: "Homework 4"
+author: "Adeline Shin"
+date: "4/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lasso2)
+set.seed(1)
+```
+
+# Problem 1
+## Loading and Cleaning the Data
+```{r}
+data("Prostate")
+prostate_df = Prostate
+```
+
+## Part A
+```{r}
+
+```
+
