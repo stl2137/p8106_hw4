@@ -2,13 +2,26 @@
 title: "Homework 4"
 author: "Adeline Shin"
 date: "4/19/2020"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(lasso2)
+library(ISLR)
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(party)
+library(partykit)
+library(randomForest)
+library(ranger)
+library(gbm)
+library(plotmo)
+library(pdp)
+library(lime)
+
 set.seed(1)
 ```
 
@@ -20,6 +33,28 @@ prostate_df = Prostate
 ```
 
 ## Part A
+```{r}
+# Building the initial tree
+tree_1 = rpart(formula = lpsa ~ ., data = prostate_df)
+rpart.plot(tree_1)
+
+# Pruning to determine size of best tree
+cpTable = printcp(tree_1)
+plotcp(tree_1)
+minErr = which.min(cpTable[, 4])
+
+# Tree with minimum CV
+min_cv_tree = prune(tree_1, cp = cpTable[minErr, 1])
+rpart.plot(min_cv_tree)
+
+# Tree with 1 SE rule
+se_tree = prune(tree_1, cp = cpTable[cpTable[, 4] < cpTable[minErr, 4]+cpTable[minErr, 5], 1][1])
+rpart.plot(se_tree)
+```
+
+As shown above, the tree obtained with the minimum CV is not the same as that obtained with the 1 SE rule. The tree that corresponds to the minimum cross-validation error has a size of 8, while the tree obtained with the 1 SE rule only has a size of 3.
+
+## Part B
 ```{r}
 
 ```
