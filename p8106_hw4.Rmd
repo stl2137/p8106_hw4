@@ -1,7 +1,7 @@
 ---
 title: "Homework 4"
 author: "Adeline Shin"
-date: "4/19/2020"
+date: "4/26/2020"
 output: github_document
 ---
 
@@ -55,7 +55,11 @@ rpart.plot(se_tree)
 As shown above, the tree obtained with the minimum CV is not the same as that obtained with the 1 SE rule. The tree that corresponds to the minimum cross-validation error has a size of 8, while the tree obtained with the 1 SE rule only has a size of 3.
 
 ## Part B
-```{r}
+Looking above at the cp plot from Part A, the left-most cp with the mean relative error below the horizontal line is cp = 0.1. Therefore, this value will be used to plot the final chosen tree, which is the same as the tree obtained using the 1 SE rule.
 
+```{r}
+final_tree = rpart(formula = lpsa ~ ., data = prostate_df, control = rpart.control(cp = 0.1))
+rpart.plot(final_tree)
 ```
 
+The left-most node on this tree means that of 
