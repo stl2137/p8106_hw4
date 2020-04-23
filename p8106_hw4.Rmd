@@ -16,7 +16,6 @@ library(rpart.plot)
 library(party)
 library(partykit)
 library(randomForest)
-library(ranger)
 library(gbm)
 library(plotmo)
 library(pdp)
@@ -63,3 +62,37 @@ rpart.plot(final_tree)
 ```
 
 The left-most node on this tree means that of 
+
+## Part C
+```{r}
+set.seed(1)
+bagging = randomForest(lpsa ~ ., data = prostate_df, mtry = 8)
+importance(bagging)
+```
+
+The matrix of variable importances is shown above, with the values signifying each of the variable's importance in the random forest model.
+
+## Part D
+```{r}
+set.seed(1)
+rf = randomForest(lpsa ~ ., data = prostate_df, mtry = 2)
+importance(rf)
+```
+The variable importance matrix above shows that the value of importance changes between the random forest model and the bagging model done in Part C.
+
+## Part E
+```{r}
+set.seed(1)
+boosting = gbm(lpsa ~ ., data = prostate_df,
+               distribution = "gaussian",
+               n.trees = 5000,
+               interaction.depth = 3,
+               shrinkage = 0.005,
+               cv.folds = 10)
+
+nt = gbm.perf(boosting, method = "cv")
+```
+
+According to the graph above, the number of trees that should be added to the ensemble is `r nt`.
+
+## Part F
