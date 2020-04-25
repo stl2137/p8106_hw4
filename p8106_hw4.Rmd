@@ -20,6 +20,7 @@ library(gbm)
 library(plotmo)
 library(pdp)
 library(lime)
+library(ModelMetrics)
 
 set.seed(1)
 ```
@@ -31,7 +32,7 @@ data("Prostate")
 prostate_df = Prostate
 ```
 
-## Part A
+## Part A: Regression Tree
 ```{r}
 # Building the initial tree
 tree_1 = rpart(formula = lpsa ~ ., data = prostate_df)
@@ -53,7 +54,7 @@ rpart.plot(se_tree)
 
 As shown above, the tree obtained with the minimum CV is not the same as that obtained with the 1 SE rule. The tree that corresponds to the minimum cross-validation error has a size of 8, while the tree obtained with the 1 SE rule only has a size of 3.
 
-## Part B
+## Part B: Final Tree Plot
 Looking above at the cp plot from Part A, the left-most cp with the mean relative error below the horizontal line is cp = 0.1. Therefore, this value will be used to plot the final chosen tree, which is the same as the tree obtained using the 1 SE rule.
 
 ```{r}
@@ -63,7 +64,7 @@ rpart.plot(final_tree)
 
 The left-most node on this tree means that of 
 
-## Part C
+## Part C: Bagging
 ```{r}
 set.seed(1)
 bagging = randomForest(lpsa ~ ., data = prostate_df, mtry = 8)
@@ -72,15 +73,15 @@ importance(bagging)
 
 The matrix of variable importances is shown above, with the values signifying each of the variable's importance in the random forest model.
 
-## Part D
+## Part D: Random Forest
 ```{r}
 set.seed(1)
 rf = randomForest(lpsa ~ ., data = prostate_df, mtry = 2)
-importance(rf)
 ```
+
 The variable importance matrix above shows that the value of importance changes between the random forest model and the bagging model done in Part C.
 
-## Part E
+## Part E: Boosting
 ```{r}
 set.seed(1)
 boosting = gbm(lpsa ~ ., data = prostate_df,
@@ -93,6 +94,75 @@ boosting = gbm(lpsa ~ ., data = prostate_df,
 nt = gbm.perf(boosting, method = "cv")
 ```
 
-According to the graph above, the number of trees that should be added to the ensemble is `r nt`.
+According to the graph above, the number of trees that should be added to the ensemble is `r nt`. In addition, the graph below shows the variable importance in the bagging model.
 
-## Part F
+```{r}
+summary(boosting, las = 2, cBars = 19, cex.names = 0.6)
+```
+
+## Part F: Model Comparison
+```{r}
+
+```
+
+
+# Problem 2
+## Loading and Cleaning the Data
+```{r}
+data(OJ)
+oj_data = OJ %>% 
+  janitor::clean_names()
+
+set.seed(1)
+rowTrain = createDataPartition(y = oj_data$pct_disc_ch,
+                               p = 800/1070,
+                               list = FALSE)
+training_data = as.data.frame(oj_data[rowTrain,])
+test_data = as.data.frame(oj_data[-rowTrain,])
+```
+
+## Part A: Classification Forest
+```{r}
+# Initial classification tree
+set.seed(1)
+class_tree = rpart(formula = purchase ~ ., data = oj_data,
+                   subset = rowTrain,
+                   control = rpart.control(cp = 0))
+```
+
+Using the cross-validation error plot, the final tree with the minimum error is shown below.
+
+```{r}
+cpTable = printcp(class_tree)
+plotcp(class_tree)
+minErr = which.min(cpTable[,4])
+
+# Using minimum cross-validation error
+tree2 = prune(class_tree, cp = cpTable[minErr,1])
+rpart.plot(tree2)
+```
+
+The response prediction can be shown below, as well as the MSE calculation as the test error.
+
+```{r}
+rpart_predict = predict(class_tree, newdata = test_data)
+rpart_mse = mse(rpart_predict, test_data$purchase)
+```
+
+When using the training data to predict the response, the test classification MSE is `r rpart_mse`, which means the classification error rate is `r rpart_mse * 100`%.
+
+## Part B: Random Forest
+```{r}
+set.seed(1)
+rf_2_final = ranger::ranger(purchase ~ ., data = oj_data,
+                            mtry = 10,
+                            splitrule = "gini",
+                            min.node.size = 5,
+                            importance = "permutation",
+                            scale.permutation.importance = TRUE)
+
+barplot(sort(ranger::importance(rf_2_final), decreasing = FALSE),
+        las = 2, horiz = TRUE, cex.names = 0.7,
+        col = colorRampPalette(colors = c("darkred", "white", "darkblue"))(19))
+```
+
