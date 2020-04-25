@@ -68,7 +68,7 @@ The left-most node on this tree means that of
 ```{r}
 set.seed(1)
 bagging = randomForest(lpsa ~ ., data = prostate_df, mtry = 8)
-importance(bagging)
+bagging$importance
 ```
 
 The matrix of variable importances is shown above, with the values signifying each of the variable's importance in the random forest model.
@@ -77,6 +77,7 @@ The matrix of variable importances is shown above, with the values signifying ea
 ```{r}
 set.seed(1)
 rf = randomForest(lpsa ~ ., data = prostate_df, mtry = 2)
+rf$importance
 ```
 
 The variable importance matrix above shows that the value of importance changes between the random forest model and the bagging model done in Part C.
@@ -166,3 +167,32 @@ barplot(sort(ranger::importance(rf_2_final), decreasing = FALSE),
         col = colorRampPalette(colors = c("darkred", "white", "darkblue"))(19))
 ```
 
+The test error rate is
+
+```{r}
+
+```
+
+
+## Part C: Boosting
+```{r}
+set.seed(1)
+boosting_2 = gbm(purchase ~ ., data = oj_data,
+                 distribution = "gaussian",
+                 n.trees = 5000,
+                 interaction.depth = 3,
+                 shrinkage = 0.005,
+                 cv.folds = 10)
+```
+
+```{r}
+nt_2 = gbm.perf(boosting_2, method = "cv")
+```
+
+The graph above shows the number of trees that should be included, which is `r nt_2`. Below, a bar graph of the relative variable importance is shown for the boosting model.
+
+```{r}
+summary(boosting_2, las = 2, cBars = 19, cex.names = 0.6)
+```
+
+The test error rate 
